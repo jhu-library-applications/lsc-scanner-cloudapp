@@ -2,7 +2,7 @@ import { finalize } from 'rxjs/operators';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CloudAppRestService, AlertService, HttpMethod, Request } from '@exlibris/exl-cloudapp-angular-lib';
 import { Item } from '../interfaces/item.interface';
-import { forkJoin } from 'rxjs/internal/observable/forkJoin';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-main',
