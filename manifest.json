@@ -2,5 +2,9 @@
    "id": "lsc-scanner",
    "title": "LSC Scanner",
    "subtitle": "A Cloud App for scanning items at the JHU Library Service Center",
-   "author": "JHU Library Applications Group"
+   "author": "JHU Library Applications Group",
+   "icon": {
+      "type": "font",
+      "value": "fa fa-barcode"
+   }
 }
