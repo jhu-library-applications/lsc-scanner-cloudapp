@@ -3,6 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CloudAppRestService, AlertService, HttpMethod, Request } from '@exlibris/exl-cloudapp-angular-lib';
 import { Item } from '../interfaces/item.interface';
 import { forkJoin } from 'rxjs';
+import * as Tone from 'tone'
 
 @Component({
   selector: 'app-main',
@@ -27,6 +28,11 @@ export class MainComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
   }
 
+  playBeep(note: string): void {
+    const synth = new Tone.Synth().toDestination();
+    synth.triggerAttackRelease(note, "8n");
+  }
+
   onItemEnterPressed(itemBarcode: string, inputElement: HTMLInputElement) {
     this.loading = true;
     inputElement.value = '';
@@ -34,14 +40,20 @@ export class MainComponent implements OnInit, OnDestroy {
       finalize(() => this.loading = false)
     ).subscribe(
       item => {
-        console.log(item)
         const uniqueId = item.bib_data.mms_id;
         if (!this.uniqueItemIds.has(uniqueId)) {
           this.uniqueItemIds.add(uniqueId);
           this.itemList.push(item);
+        } else {
+          this.playBeep("C3");
+          this.alert.error(`Item ${itemBarcode} already exists in the list.`);
         }
       },
-      error => console.log(error)
+      error => {
+        console.error(error);
+        this.playBeep("C3");
+        this.alert.error('An error occurred while retrieving this item.');
+      }
     )
   }
 
@@ -79,15 +91,21 @@ export class MainComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.loading = false;
         console.error(error);
-        this.alert.error('An error occurred while updating items.');
+        this.alert.error('An error occurred while updating the items: ' + error.message);
       }
     });
   }
 
-  removeItem(item: any): void {
+  removeItem(item: Item): void {
     this.itemList = this.itemList.filter(currentItem => currentItem !== item);
   
     const uniqueId = item.bib_data.mms_id;
     this.uniqueItemIds.delete(uniqueId);
+  }
+
+  reset(): void {
+    this.itemList = [];
+    this.uniqueItemIds = new Set();
+    this.rmstBarcodeForItems = undefined;
   }
 }
