@@ -16,6 +16,9 @@
     <mat-card-title>{{ item.bib_data.title }} {{ item.bib_data.author }}</mat-card-title>
     <mat-list>
       <mat-list-item>MMS: {{ item.bib_data.mms_id }} </mat-list-item>
+      <div *ngIf="item.item_data.storage_location_id">
+        <mat-list-item>RMST: {{ item.item_data.storage_location_id }} </mat-list-item>
+      </div>
       <mat-list-item>Call Number: {{ item.holding_data.call_number }} </mat-list-item>
      </mat-list>
 
