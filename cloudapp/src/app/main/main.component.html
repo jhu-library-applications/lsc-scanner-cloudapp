@@ -1,57 +1,74 @@
-<div class="loading-shade" *ngIf="loading">
-  <mat-spinner diameter="50"></mat-spinner>
-  <br>
-</div>
+<div style="overflow: auto;">
+  <div class="actions">
+    <div class="loading-shade" *ngIf="loading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <br>
+    </div>
 
-<mat-form-field appearance="outline">
-  <mat-label>Item Barcode</mat-label>
-  <input #itemBarcode (keydown.enter)="onItemEnterPressed(itemBarcode.value, itemBarcode)" matInput placeholder="Item Barcode">
-  <mat-icon matSuffix>document_scanner</mat-icon>
-  <mat-hint></mat-hint>
-</mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Item Barcode</mat-label>
+      <input #itemBarcode (keydown.enter)="onItemEnterPressed(itemBarcode.value, itemBarcode)" matInput
+        placeholder="Item Barcode">
+      <mat-icon matSuffix>document_scanner</mat-icon>
+      <mat-hint></mat-hint>
+    </mat-form-field>
 
-<div *ngFor="let item of itemList">
-  <mat-card>
-    <mat-card-header>
-    <mat-card-title>{{ item.bib_data.title }} {{ item.bib_data.author }}</mat-card-title>
-    <mat-list>
-      <mat-list-item>MMS: {{ item.bib_data.mms_id }} </mat-list-item>
-      <div *ngIf="item.item_data.storage_location_id">
-        <mat-list-item>RMST: {{ item.item_data.storage_location_id }} </mat-list-item>
+    <mat-form-field appearance="outline">
+      <mat-label>RMST Barcode</mat-label>
+      <input #rmstBarcode (keydown.enter)="onRMSTEnterPressed(rmstBarcode.value)" matInput placeholder="RMST Barcode">
+      <mat-icon matSuffix>document_scanner</mat-icon>
+      <mat-hint></mat-hint>
+    </mat-form-field>
+
+    <div *ngIf="itemList.length">
+      <mat-card>
+        <mat-card-title>{{ itemList.length }} items</mat-card-title>
+      </mat-card>
+      <br>
+    </div>
+
+    <div *ngIf="rmstBarcodeForItems">
+      <mat-card>
+        <mat-card-title><strong>Adding RMST</strong>: {{ rmstBarcodeForItems }} </mat-card-title>
+      </mat-card>
+      <br>
+    </div>
+
+    <div class="buttons">
+      <div *ngIf="itemList.length > 0 || rmstBarcodeForItems">
+        <button mat-raised-button (click)="reset()">Reset</button>
       </div>
-      <mat-list-item>Call Number: {{ item.holding_data.call_number }} </mat-list-item>
-     </mat-list>
 
-    <button class="remove-button" mat-icon-button aria-label="Remove" (click)="removeItem(item)">
-      <mat-icon>close</mat-icon>
-    </button>
-  </mat-card-header>
+      <div *ngIf="itemList.length > 0 && rmstBarcodeForItems">
 
-  </mat-card>
-  <br>
-</div>
+        <button mat-raised-button color="primary" (click)="onSubmit()">Add RMST to Items</button>
+      </div>
+    </div>
 
-<mat-form-field appearance="outline">
-  <mat-label>RMST Barcode</mat-label>
-  <input #rmstBarcode (keydown.enter)="onRMSTEnterPressed(rmstBarcode.value)" matInput placeholder="RMST Barcode">
-  <mat-icon matSuffix>document_scanner</mat-icon>
-  <mat-hint></mat-hint>
-</mat-form-field>
+  </div>
+
+  <div *ngFor="let item of itemList.slice().reverse(); let i = index">
+    <mat-card>
+      <mat-card-header>
+        <mat-list>
+          <mat-list-item><h3><b>{{ i + 1}}.</b> {{ item.bib_data.title }}</h3></mat-list-item>
+          <mat-list-item>Barcode: {{ item.item_data.barcode }} </mat-list-item>
+          <mat-list-item>MMS: {{ item.bib_data.mms_id }} </mat-list-item>
+          <div *ngIf="item.item_data.storage_location_id">
+            <mat-list-item>RMST: {{ item.item_data.storage_location_id }} </mat-list-item>
+          </div>
+          <mat-list-item>Call Number: {{ item.holding_data.call_number }} </mat-list-item>
+        </mat-list>
+
+        <button class="remove-button" mat-icon-button aria-label="Remove" (click)="removeItem(item)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+
+    </mat-card>
+    <br>
+  </div>
 
 
-<div *ngIf="rmstBarcodeForItems">
-  <mat-card>
-    <mat-card-title><strong>RMST</strong>:  {{ rmstBarcodeForItems }} </mat-card-title>
-  </mat-card>
-  <br>
-</div>
 
-<div *ngIf="itemList.length > 0 && rmstBarcodeForItems">
-  <button mat-raised-button color="primary" (click)="onSubmit()">Add RMST to Items</button>
-  <br>
-</div>
-
-<div *ngIf="itemList.length > 0 || rmstBarcodeForItems">
-  <button mat-raised-button (click)="reset()">Reset</button>
-  <br>
 </div>
