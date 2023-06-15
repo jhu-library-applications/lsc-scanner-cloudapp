@@ -50,8 +50,14 @@
   <div *ngFor="let item of itemList.slice().reverse(); let i = index">
     <mat-card>
       <mat-card-header>
+        <mat-card-title><h3><b>{{ i + 1}}.</b> {{ item.bib_data.title }}</h3></mat-card-title>
+        <span class="mat-spacer"></span>
+        <button class="remove-button" mat-icon-button aria-label="Remove" (click)="removeItem(item)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
         <mat-list>
-          <mat-list-item><h3><b>{{ i + 1}}.</b> {{ item.bib_data.title }}</h3></mat-list-item>
           <mat-list-item>Barcode: {{ item.item_data.barcode }} </mat-list-item>
           <mat-list-item>MMS: {{ item.bib_data.mms_id }} </mat-list-item>
           <div *ngIf="item.item_data.storage_location_id">
@@ -59,12 +65,7 @@
           </div>
           <mat-list-item>Call Number: {{ item.holding_data.call_number }} </mat-list-item>
         </mat-list>
-
-        <button class="remove-button" mat-icon-button aria-label="Remove" (click)="removeItem(item)">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-card-header>
-
+      </mat-card-content>
     </mat-card>
     <br>
   </div>
