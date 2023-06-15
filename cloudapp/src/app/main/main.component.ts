@@ -67,7 +67,10 @@ export class MainComponent implements OnInit, OnDestroy {
     const updateRequests = this.itemList.map(item => {
       const updateData = item;
       updateData.item_data.storage_location_id = this.rmstBarcodeForItems;
-  
+
+      // Change the status of the item from in-process to available
+      updateData.item_data.internal_note_1 = '';
+
       const itemId = item.item_data.pid;
   
       const request: Request = {
