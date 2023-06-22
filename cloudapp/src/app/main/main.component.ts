@@ -15,7 +15,7 @@ export class MainComponent implements OnInit, OnDestroy {
   uniqueItemIds: Set<string> = new Set();
   itemList: Item[] = [];
   rmstBarcodeForItems: string;
-
+  locationCheck: boolean = true;
 
   constructor(
     private restService: CloudAppRestService,
@@ -41,6 +41,13 @@ export class MainComponent implements OnInit, OnDestroy {
     ).subscribe(
       item => {
         const uniqueId = item.bib_data.mms_id;
+
+        if (this.locationCheck && item.item_data.library != 'LSC') {
+          this.playBeep("C3");
+          this.alert.error(`Item with the barcode ${itemBarcode} is not in the LSC library.`);
+          return;
+        }
+
         if (!this.uniqueItemIds.has(uniqueId)) {
           this.uniqueItemIds.add(uniqueId);
           this.itemList.push(item);
@@ -70,6 +77,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
       // Change the status of the item from in-process to available
       updateData.item_data.internal_note_1 = '';
+
 
       const itemId = item.item_data.pid;
   
