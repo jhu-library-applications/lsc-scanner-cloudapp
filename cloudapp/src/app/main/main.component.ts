@@ -10,12 +10,13 @@ import * as Tone from 'tone'
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
+
 export class MainComponent implements OnInit, OnDestroy {
   loading = false;
   uniqueItemIds: Set<string> = new Set();
   itemList: Item[] = [];
   rmstBarcodeForItems: string;
-  locationCheck: boolean = true;
+  locationCheck: boolean = false;
 
   constructor(
     private restService: CloudAppRestService,
@@ -40,7 +41,7 @@ export class MainComponent implements OnInit, OnDestroy {
       finalize(() => this.loading = false)
     ).subscribe(
       item => {
-        const uniqueId = item.bib_data.mms_id;
+        const uniqueId = item.item_data.barcode;
 
         if (this.locationCheck && item.item_data.library != 'LSC') {
           this.playBeep("C3");
