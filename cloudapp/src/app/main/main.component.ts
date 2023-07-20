@@ -81,8 +81,6 @@ export class MainComponent implements OnInit, OnDestroy {
       updateData.item_data.internal_note_1 = '';
 
       if (this.bigMoveMode) {
-        // Update internal note 1 to be blank
-        updateData.item_data.internal_note_1 = '';
         updateData.item_data.library = {
           value: 'LSC',
           desc: 'Offsite Storage'
@@ -92,6 +90,34 @@ export class MainComponent implements OnInit, OnDestroy {
           desc: 'Sheridan Stacks at LSC'
         }
 
+        // Delete requests
+        // Get the request ids
+        const ItemRequestRequest: Request = {
+          url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests`,
+          method: HttpMethod.GET
+        };
+
+        this.restService.call(ItemRequestRequest).subscribe(data => {
+          console.log('Item Request Data:', data);
+          if (data && data.user_request) {
+            data.user_request.forEach(request => {
+              const requestId = request.request_id;
+    
+              const deleteRequestsRequest: Request = {
+                url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${itemId}/requests/${requestId}`,
+                method: HttpMethod.DELETE
+              }
+              // Delete the requests
+              this.restService.call(deleteRequestsRequest).subscribe(response => {
+                console.log('Delete Request Response:', response);
+              }, error => {
+                console.error('Error Deleting Request:', error);
+              });
+            });
+          }
+        }, error => {
+          console.error('Error Fetching Item Request:', error);
+        });
       }
 
       const itemId = item.item_data.pid;
