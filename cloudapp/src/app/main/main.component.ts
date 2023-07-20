@@ -19,10 +19,10 @@ export class MainComponent implements OnInit, OnDestroy {
   locationCheck: boolean = false;
   bigMoveMode: boolean = false;
   // Sandbox values 
-  library: string = 'elsc';
-  location: string = '2305open';
-  //library: string = 'LSC';
-  //location: string = 'shmoffs';
+  //library: string = 'elsc';
+  //location: string = '2305open';
+  library: string = 'LSC';
+  location: string = 'shmoffs';
   libraryDesc: string = 'Offsite Storage';
   locationDesc: string = 'Sheridan Stacks at LSC';
   circDesk: string = 'DEFAULT_CIRC_DESK';
@@ -113,7 +113,7 @@ export class MainComponent implements OnInit, OnDestroy {
         if (this.bigMoveMode) {
 
           const item = response[0];
-          
+
           const scanInRequest: Request = {
             url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
             queryParams: { op: 'scan', library: this.library, circ_desk: this.circDesk, register_in_house_use: 'true' },
