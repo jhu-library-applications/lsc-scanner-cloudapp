@@ -18,6 +18,14 @@ export class MainComponent implements OnInit, OnDestroy {
   rmstBarcodeForItems: string;
   locationCheck: boolean = false;
   bigMoveMode: boolean = false;
+  // Sandbox values 
+  // library: string = 'elsc';
+  // location: string = '2305open';
+  library: string = 'LSC';
+  location: string = 'shmoffs';
+  libraryDesc: string = 'Offsite Storage';
+  locationDesc: string = 'Sheridan Stacks at LSC';
+  circDesk: string = 'DEFAULT_CIRC_DESK';
 
   constructor(
     private restService: CloudAppRestService,
@@ -44,9 +52,9 @@ export class MainComponent implements OnInit, OnDestroy {
       item => {
         const uniqueId = item.item_data.barcode;
 
-        if (this.locationCheck && item.item_data.library != 'LSC') {
+        if (this.locationCheck && item.item_data.library != this.library) {
           this.playBeep("C3");
-          this.alert.error(`Item with the barcode ${itemBarcode} is not in the LSC library.`);
+          this.alert.error(`Item with the barcode ${itemBarcode} is not in the ${this.library} library.`);
           return;
         }
 
@@ -82,12 +90,12 @@ export class MainComponent implements OnInit, OnDestroy {
 
       if (this.bigMoveMode) {
         updateData.item_data.library = {
-          value: 'LSC',
-          desc: 'Offsite Storage'
+          value: this.library,
+          desc: this.libraryDesc
         }
         updateData.item_data.location = {
-          value: 'shmoffs',
-          desc: 'Sheridan Stacks at LSC'
+          value: this.location,
+          desc: this.locationDesc
         }
 
         // Delete requests
@@ -102,7 +110,7 @@ export class MainComponent implements OnInit, OnDestroy {
           if (data && data.user_request) {
             data.user_request.forEach(request => {
               const requestId = request.request_id;
-    
+
               const deleteRequestsRequest: Request = {
                 url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${itemId}/requests/${requestId}`,
                 method: HttpMethod.DELETE
@@ -118,7 +126,19 @@ export class MainComponent implements OnInit, OnDestroy {
         }, error => {
           console.error('Error Fetching Item Request:', error);
         });
+
+        const scanInRequest: Request = {
+          url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
+          queryParams: { op: 'scan', library: this.library, circ_desk: this.circDesk, register_in_house_use: 'true' },
+          method: HttpMethod.POST
+        };
+        this.restService.call(scanInRequest).subscribe(response => {
+          console.log('Scan-in Response:', response);
+        }, error => {
+          console.error('Error Scan-in:', error);
+        });
       }
+
 
       const itemId = item.item_data.pid;
 
