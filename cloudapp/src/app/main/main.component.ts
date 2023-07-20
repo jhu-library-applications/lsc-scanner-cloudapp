@@ -17,10 +17,11 @@ export class MainComponent implements OnInit, OnDestroy {
   itemList: Item[] = [];
   rmstBarcodeForItems: string;
   locationCheck: boolean = false;
+  bigMoveMode: boolean = false;
 
   constructor(
     private restService: CloudAppRestService,
-    private alert: AlertService 
+    private alert: AlertService
   ) { }
 
   ngOnInit() {
@@ -79,25 +80,38 @@ export class MainComponent implements OnInit, OnDestroy {
       // Change the status of the item from in-process to available
       updateData.item_data.internal_note_1 = '';
 
+      if (this.bigMoveMode) {
+        // Update internal note 1 to be blank
+        updateData.item_data.internal_note_1 = '';
+        updateData.item_data.library = {
+          value: 'LSC',
+          desc: 'Offsite Storage'
+        }
+        updateData.item_data.location = {
+          value: 'shmoffs',
+          desc: 'Sheridan Stacks at LSC'
+        }
+
+      }
 
       const itemId = item.item_data.pid;
-  
+
       const request: Request = {
         url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${itemId}`,
         method: HttpMethod.PUT,
         requestBody: updateData
       };
-  
+
       return this.restService.call(request);
     });
-  
+
     forkJoin(updateRequests).subscribe({
       next: () => {
         this.loading = false;
         this.itemList = [];
         this.uniqueItemIds = new Set();
         this.rmstBarcodeForItems = undefined;
-  
+
         this.alert.success('RMST added to all items successfully.');
       },
       error: (error) => {
@@ -110,7 +124,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   removeItem(item: Item): void {
     this.itemList = this.itemList.filter(currentItem => currentItem !== item);
-  
+
     const uniqueId = item.bib_data.mms_id;
     this.uniqueItemIds.delete(uniqueId);
   }
