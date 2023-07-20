@@ -19,10 +19,10 @@ export class MainComponent implements OnInit, OnDestroy {
   locationCheck: boolean = false;
   bigMoveMode: boolean = false;
   // Sandbox values 
-  // library: string = 'elsc';
-  // location: string = '2305open';
-  library: string = 'LSC';
-  location: string = 'shmoffs';
+  library: string = 'elsc';
+  location: string = '2305open';
+  //library: string = 'LSC';
+  //location: string = 'shmoffs';
   libraryDesc: string = 'Offsite Storage';
   locationDesc: string = 'Sheridan Stacks at LSC';
   circDesk: string = 'DEFAULT_CIRC_DESK';
@@ -97,53 +97,10 @@ export class MainComponent implements OnInit, OnDestroy {
           value: this.location,
           desc: this.locationDesc
         }
-
-        // Delete requests
-        // Get the request ids
-        const ItemRequestRequest: Request = {
-          url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests`,
-          method: HttpMethod.GET
-        };
-
-        this.restService.call(ItemRequestRequest).subscribe(data => {
-          console.log('Item Request Data:', data);
-          if (data && data.user_request) {
-            data.user_request.forEach(request => {
-              const requestId = request.request_id;
-
-              const deleteRequestsRequest: Request = {
-                url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${itemId}/requests/${requestId}`,
-                method: HttpMethod.DELETE
-              }
-              // Delete the requests
-              this.restService.call(deleteRequestsRequest).subscribe(response => {
-                console.log('Delete Request Response:', response);
-              }, error => {
-                console.error('Error Deleting Request:', error);
-              });
-            });
-          }
-        }, error => {
-          console.error('Error Fetching Item Request:', error);
-        });
-
-        const scanInRequest: Request = {
-          url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
-          queryParams: { op: 'scan', library: this.library, circ_desk: this.circDesk, register_in_house_use: 'true' },
-          method: HttpMethod.POST
-        };
-        this.restService.call(scanInRequest).subscribe(response => {
-          console.log('Scan-in Response:', response);
-        }, error => {
-          console.error('Error Scan-in:', error);
-        });
       }
 
-
-      const itemId = item.item_data.pid;
-
       const request: Request = {
-        url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${itemId}`,
+        url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
         method: HttpMethod.PUT,
         requestBody: updateData
       };
@@ -152,7 +109,67 @@ export class MainComponent implements OnInit, OnDestroy {
     });
 
     forkJoin(updateRequests).subscribe({
-      next: () => {
+      next: (response) => {
+        if (this.bigMoveMode) {
+
+          const item = response[0];
+          
+          const scanInRequest: Request = {
+            url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
+            queryParams: { op: 'scan', library: this.library, circ_desk: this.circDesk, register_in_house_use: 'true' },
+            method: HttpMethod.POST
+          };
+          this.restService.call(scanInRequest).subscribe(response => {
+            console.log('Scan-in Response:', response);
+          }, error => {
+            console.error('Error Scan-in:', error);
+          });
+
+          const ItemRequestRequest: Request = {
+            url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests`,
+            method: HttpMethod.GET
+          };
+
+          this.restService.call(ItemRequestRequest).subscribe(data => {
+            console.log('Item Request Data:', data);
+
+
+
+            if (data && data.user_request) {
+              data.user_request.forEach(request => {
+                const requestId = request.request_id;
+
+                // Delete title requests
+                const deleteTitleRequestsRequest: Request = {
+                  url: `/almaws/v1/bibs/${item.bib_data.mms_id}/requests/${requestId}`,
+                  method: HttpMethod.DELETE
+                }
+                this.restService.call(deleteTitleRequestsRequest).subscribe(response => {
+                  console.log('Delete Title Request Response:', response);
+                }, error => {
+                  console.error('Error Deleting Title Request:', error);
+                });
+
+                const deleteRequestsRequest: Request = {
+                  url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests/${requestId}`,
+                  method: HttpMethod.DELETE
+                }
+                // Delete the requests
+                this.restService.call(deleteRequestsRequest).subscribe(response => {
+                  console.log('Delete Request Response:', response);
+                }, error => {
+                  console.error('Error Deleting Request:', error);
+                });
+              });
+            }
+          }, error => {
+            console.error('Error Fetching Item Request:', error);
+          });
+
+
+        }
+
+
         this.loading = false;
         this.itemList = [];
         this.uniqueItemIds = new Set();
