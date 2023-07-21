@@ -2,8 +2,11 @@ import { finalize } from 'rxjs/operators';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CloudAppRestService, AlertService, HttpMethod, Request } from '@exlibris/exl-cloudapp-angular-lib';
 import { Item } from '../interfaces/item.interface';
+import { ItemService } from '../item.service';
 import { forkJoin } from 'rxjs';
 import * as Tone from 'tone'
+import { locationCodeMapping } from './location_code_mapping';
+import { ItemUpdate } from '../interfaces/item_update.interface';
 
 @Component({
   selector: 'app-main',
@@ -19,8 +22,8 @@ export class MainComponent implements OnInit, OnDestroy {
   locationCheck: boolean = false;
   bigMoveMode: boolean = false;
   // Sandbox values 
-  //library: string = 'elsc';
-  //location: string = '2305open';
+  // library: string = 'elsc';
+  // location: string = '2305open';
   library: string = 'LSC';
   location: string = 'shmoffs';
   libraryDesc: string = 'Offsite Storage';
@@ -29,7 +32,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
   constructor(
     private restService: CloudAppRestService,
-    private alert: AlertService
+    private alert: AlertService,
+    private itemService: ItemService
   ) { }
 
   ngOnInit() {
@@ -46,13 +50,13 @@ export class MainComponent implements OnInit, OnDestroy {
   onItemEnterPressed(itemBarcode: string, inputElement: HTMLInputElement) {
     this.loading = true;
     inputElement.value = '';
-    this.restService.call(`/almaws/v1/items?item_barcode=${itemBarcode}`).pipe(
+    this.itemService.getItemByBarcode(itemBarcode).pipe(
       finalize(() => this.loading = false)
     ).subscribe(
       item => {
         const uniqueId = item.item_data.barcode;
 
-        if (this.locationCheck && item.item_data.library != this.library) {
+        if (this.locationCheck && item.item_data.library.value != this.library) {
           this.playBeep("C3");
           this.alert.error(`Item with the barcode ${itemBarcode} is not in the ${this.library} library.`);
           return;
@@ -63,7 +67,7 @@ export class MainComponent implements OnInit, OnDestroy {
           this.itemList.push(item);
         } else {
           this.playBeep("C3");
-          this.alert.error(`Item ${itemBarcode} already exists in the list.`);
+          this.alert.error(`Item with the barcode ${itemBarcode} already exists in the list.`);
         }
       },
       error => {
@@ -82,93 +86,33 @@ export class MainComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     const updateRequests = this.itemList.map(item => {
-      const updateData = item;
-      updateData.item_data.storage_location_id = this.rmstBarcodeForItems;
-
-      // Change the status of the item from in-process to available
-      updateData.item_data.internal_note_1 = '';
-
-      if (this.bigMoveMode) {
-        updateData.item_data.library = {
-          value: this.library,
-          desc: this.libraryDesc
-        }
-        updateData.item_data.location = {
-          value: this.location,
-          desc: this.locationDesc
-        }
-      }
-
-      const request: Request = {
-        url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
-        method: HttpMethod.PUT,
-        requestBody: updateData
+      const itemUpdate: ItemUpdate = {
+        item: item,
+        rmstBarcodeForItems: this.rmstBarcodeForItems,
+        bigMoveMode: this.bigMoveMode,
+        location: this.location,
+        library: this.library,
+        libraryDesc: this.libraryDesc,
+        locationDesc: this.locationDesc,
+        locationCodeMapping: locationCodeMapping
       };
 
-      return this.restService.call(request);
+      return this.itemService.updateItem(itemUpdate);
     });
 
     forkJoin(updateRequests).subscribe({
       next: (response) => {
         if (this.bigMoveMode) {
-
-          const item = response[0];
-
-          const scanInRequest: Request = {
-            url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}`,
-            queryParams: { op: 'scan', library: this.library, circ_desk: this.circDesk, register_in_house_use: 'true' },
-            method: HttpMethod.POST
-          };
-          this.restService.call(scanInRequest).subscribe(response => {
-            console.log('Scan-in Response:', response);
-          }, error => {
-            console.error('Error Scan-in:', error);
-          });
-
-          const ItemRequestRequest: Request = {
-            url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests`,
-            method: HttpMethod.GET
-          };
-
-          this.restService.call(ItemRequestRequest).subscribe(data => {
-            console.log('Item Request Data:', data);
-
-
-
-            if (data && data.user_request) {
-              data.user_request.forEach(request => {
-                const requestId = request.request_id;
-
-                // Delete title requests
-                const deleteTitleRequestsRequest: Request = {
-                  url: `/almaws/v1/bibs/${item.bib_data.mms_id}/requests/${requestId}`,
-                  method: HttpMethod.DELETE
-                }
-                this.restService.call(deleteTitleRequestsRequest).subscribe(response => {
-                  console.log('Delete Title Request Response:', response);
-                }, error => {
-                  console.error('Error Deleting Title Request:', error);
-                });
-
-                const deleteRequestsRequest: Request = {
-                  url: `/almaws/v1/bibs/${item.bib_data.mms_id}/holdings/${item.holding_data.holding_id}/items/${item.item_data.pid}/requests/${requestId}`,
-                  method: HttpMethod.DELETE
-                }
-                // Delete the requests
-                this.restService.call(deleteRequestsRequest).subscribe(response => {
-                  console.log('Delete Request Response:', response);
-                }, error => {
-                  console.error('Error Deleting Request:', error);
-                });
-              });
+          this.itemService.scanInItem(response[0], this.library, this.circDesk).subscribe({
+            next: (response) => {
+              console.log(response);
+            },
+            error: (error) => {
+              console.error(error);
+              this.alert.error('An error occurred while running scan-in: ' + error.message);
             }
-          }, error => {
-            console.error('Error Fetching Item Request:', error);
           });
-
-
         }
-
 
         this.loading = false;
         this.itemList = [];
