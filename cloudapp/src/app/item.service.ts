@@ -38,18 +38,16 @@ export class ItemService {
     itemUpdate.item.item_data.internal_note_1 = '';
 
     if (itemUpdate.bigMoveMode) {
-      // Change the location and library based on the mapping
-      itemUpdate.item.item_data.library = {
-        value: itemUpdate.library,
-        desc: itemUpdate.libraryDesc
-      }
-      itemUpdate.item.item_data.location = {
-        value: itemUpdate.locationCodeMapping[itemUpdate.item.item_data.location.value],
-        desc: itemUpdate.locationDesc
-      }
-
-      // Update the holdings record with XML -- may not be necessary
-      //this.holdingService.updateHoldingsRecord(itemUpdate)
+      this.holdingService.updateHoldingsRecord(itemUpdate).subscribe({
+        next: holding => {
+          console.log("Holding updated")
+          console.log(holding);
+        },
+        error: err => {
+          console.log(err);
+        } 
+        
+      });
     }
 
     const request: Request = {
