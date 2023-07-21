@@ -44,7 +44,7 @@ export class ItemService {
         desc: itemUpdate.libraryDesc
       }
       itemUpdate.item.item_data.location = {
-        value: itemUpdate.locationCodeMapping[itemUpdate.location],
+        value: itemUpdate.locationCodeMapping[itemUpdate.item.item_data.location.value],
         desc: itemUpdate.locationDesc
       }
 
