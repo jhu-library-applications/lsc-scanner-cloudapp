@@ -48,7 +48,8 @@ export class ItemService {
         desc: itemUpdate.locationDesc
       }
 
-      this.holdingService.updateHoldingsRecord(itemUpdate)
+      // Update the holdings record with XML -- may not be necessary
+      //this.holdingService.updateHoldingsRecord(itemUpdate)
     }
 
     const request: Request = {
