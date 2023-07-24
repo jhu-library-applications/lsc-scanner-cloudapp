@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { Item } from '../interfaces/item.interface';
 
 describe('MainComponent', () => {
@@ -23,10 +23,10 @@ describe('MainComponent', () => {
       mms_id: '123456'
     },
     holding_data: {
-        holding_id: '123456'
+      holding_id: '123456'
     },
     item_data: {
-        pid: '123456789'
+      pid: '123456789'
     }
   };
 
@@ -36,10 +36,10 @@ describe('MainComponent', () => {
       mms_id: '7654321'
     },
     holding_data: {
-        holding_id: '7654321'
+      holding_id: '7654321'
     },
     item_data: {
-        pid: '987654321'
+      pid: '987654321'
     }
   };
 
@@ -68,7 +68,7 @@ describe('MainComponent', () => {
     alertService = TestBed.inject(AlertService);
     fixture.detectChanges();
 
-    
+
   });
 
   it('should create the component', () => {
@@ -114,4 +114,68 @@ describe('MainComponent', () => {
     component.onRMSTEnterPressed(rmstBarcode);
     expect(component.rmstBarcodeForItems).toBe(rmstBarcode);
   });
+
+  it('should reset itemList, uniqueItemIds and rmstBarcodeForItems when reset is called', () => {
+    component.itemList = [mockItem];
+    component.uniqueItemIds.add(mockItem.bib_data.mms_id);
+    component.rmstBarcodeForItems = '12345';
+
+    component.reset();
+
+    expect(component.itemList.length).toBe(0);
+    expect(component.uniqueItemIds.size).toBe(0);
+    expect(component.rmstBarcodeForItems).toBeUndefined();
+  });
+
+  it('should show an error when getItemByBarcode fails', fakeAsync(() => {
+    spyOn(restService, 'call').and.returnValue(throwError('An error occurred'));
+    spyOn(alertService, 'error');
+
+    component.onItemEnterPressed('itemBarcode', mockInputElement);
+
+    tick();
+
+    expect(alertService.error).toHaveBeenCalledWith('An error occurred while retrieving this item.');
+  }));
+
+  it('should not add an item from another library when locationCheck is enabled', () => {
+    spyOn(restService, 'call').and.returnValue(of({
+      ...mockItem,
+      item_data: { library: { value: 'Other Library' } }
+    }));
+
+    component.locationCheck = true;
+
+    component.onItemEnterPressed('itemBarcode', mockInputElement);
+
+    expect(component.itemList.length).toBe(0);
+  });
+
+  it('should update all items and reset the form when onSubmit is called', fakeAsync(() => {
+    spyOn(restService, 'call').and.returnValue(of({}));
+    spyOn(alertService, 'success');
+    component.itemList = [mockItem];
+    component.rmstBarcodeForItems = '12345';
+
+    component.onSubmit();
+
+    tick();
+
+    expect(component.itemList.length).toBe(0);
+    expect(component.rmstBarcodeForItems).toBeUndefined();
+    expect(alertService.success).toHaveBeenCalledWith('RMST added to all items successfully.');
+  }));
+
+  it('should show an error when updating the items fails', fakeAsync(() => {
+    spyOn(restService, 'call').and.returnValue(throwError('An error occurred'));
+    spyOn(alertService, 'error');
+    component.itemList = [mockItem];
+
+    component.onSubmit();
+
+    tick();
+
+    expect(alertService.error).toHaveBeenCalledWith('An error occurred while updating the items: undefined');
+  }));
+
 });

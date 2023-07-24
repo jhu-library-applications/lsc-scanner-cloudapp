@@ -1,3 +1,4 @@
+import { LocationCode } from "../main/location_code_mapping"
 import { Item } from "./item.interface"
 
 export interface ItemUpdate {
@@ -7,6 +8,5 @@ export interface ItemUpdate {
     location: string, 
     library: string, 
     libraryDesc: string
-    locationDesc:string, 
-    locationCodeMapping: object
+    locationDesc:string
 }

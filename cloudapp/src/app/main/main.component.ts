@@ -1,11 +1,11 @@
 import { finalize } from 'rxjs/operators';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CloudAppRestService, AlertService, HttpMethod, Request } from '@exlibris/exl-cloudapp-angular-lib';
+import { AlertService } from '@exlibris/exl-cloudapp-angular-lib';
 import { Item } from '../interfaces/item.interface';
 import { ItemService } from '../item.service';
 import { forkJoin } from 'rxjs';
 import * as Tone from 'tone'
-import { locationCodeMapping } from './location_code_mapping';
+import { LocationCode } from './location_code_mapping';
 import { ItemUpdate } from '../interfaces/item_update.interface';
 
 @Component({
@@ -31,7 +31,6 @@ export class MainComponent implements OnInit, OnDestroy {
   circDesk: string = 'DEFAULT_CIRC_DESK';
 
   constructor(
-    private restService: CloudAppRestService,
     private alert: AlertService,
     private itemService: ItemService
   ) { }
@@ -94,7 +93,6 @@ export class MainComponent implements OnInit, OnDestroy {
         library: this.library,
         libraryDesc: this.libraryDesc,
         locationDesc: this.locationDesc,
-        locationCodeMapping: locationCodeMapping
       };
 
       return this.itemService.updateItem(itemUpdate);

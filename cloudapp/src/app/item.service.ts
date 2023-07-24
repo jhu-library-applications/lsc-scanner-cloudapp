@@ -3,14 +3,14 @@ import { CloudAppRestService, HttpMethod, Request } from '@exlibris/exl-cloudapp
 import { Observable } from 'rxjs';
 import { Item } from './interfaces/item.interface';
 import { ItemUpdate } from './interfaces/item_update.interface';
-import { HoldingService } from './holding.service';
-
+import { LocationCode } from './main/location_code_mapping';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class ItemService {
-  constructor(private restService: CloudAppRestService, private holdingService: HoldingService) { }
+  constructor(private restService: CloudAppRestService) { }
 
   getItemByBarcode(barcode: string): Observable<Item> {
     const request: Request = {
@@ -44,12 +44,9 @@ export class ItemService {
         desc: itemUpdate.libraryDesc
       }
       itemUpdate.item.item_data.location = {
-        value: itemUpdate.locationCodeMapping[itemUpdate.item.item_data.location.value] || itemUpdate.locationCodeMapping['default'],
+        value: LocationCode.getLocationCode(itemUpdate.item.item_data.location.value),
         desc: itemUpdate.locationDesc
       }
-
-      // Update the holdings record with XML -- may not be necessary
-      //this.holdingService.updateHoldingsRecord(itemUpdate)
     }
 
     const request: Request = {
