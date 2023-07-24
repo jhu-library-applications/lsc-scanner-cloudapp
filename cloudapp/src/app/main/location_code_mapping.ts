@@ -32,5 +32,7 @@ export const locationCodeMapping = {
   "shmspcoll": "shmofspc",
   "shmuglper": "shmoffs",
   "shmugrf": "shmoffs",
-  "2305open": "2305open"
+  "2305open": "2305open",
+  "shmresdvd": "schmofav",
+  "shmresbook": "shmoffs"
 };
