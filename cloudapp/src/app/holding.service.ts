@@ -42,7 +42,7 @@ export class HoldingService {
           const currentLocation = Array.from(dataFieldLocation.getElementsByTagName('subfield')).find(node => node.getAttribute('code') === 'c');
 
           if (currentLibrary) currentLibrary.textContent = library;
-          if (currentLocation) currentLocation.textContent = locationCodeMapping[location];
+          if (currentLocation) currentLocation.textContent = locationCodeMapping[location] || locationCodeMapping['default'];
         }
 
         const serializer = new XMLSerializer();
