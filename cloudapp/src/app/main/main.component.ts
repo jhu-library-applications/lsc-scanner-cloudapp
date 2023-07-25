@@ -100,18 +100,6 @@ export class MainComponent implements OnInit, OnDestroy {
 
     forkJoin(updateRequests).subscribe({
       next: (response) => {
-        if (this.bigMoveMode) {
-          this.itemService.scanInItem(response[0], this.library, this.circDesk).subscribe({
-            next: (response) => {
-              console.log(response);
-            },
-            error: (error) => {
-              console.error(error);
-              this.alert.error('An error occurred while running scan-in: ' + error.message);
-            }
-          });
-        }
-
         this.loading = false;
         this.itemList = [];
         this.uniqueItemIds = new Set();
