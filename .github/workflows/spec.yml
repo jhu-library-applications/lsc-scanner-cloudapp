@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Run specs
-      run: eca test --code-coverage
+      run: eca test --code-coverage --browsers ChromeHeadless
     - name: Upload coverage
       uses: actions/upload-artifact@v2
       with:
