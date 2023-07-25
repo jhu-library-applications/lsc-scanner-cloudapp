@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: browser-actions/setup-chrome@v1
     - uses: actions/checkout@v2
     - name: Use Node.js 16.19.0
       uses: actions/setup-node@v2
@@ -24,6 +25,8 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
+    - name: Install cloud app CLI
+      run: npm install -g @exlibris/exl-cloudapp-cli
     - name: Install dependencies
       run: npm install
     - name: Run specs
