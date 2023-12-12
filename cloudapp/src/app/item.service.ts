@@ -13,8 +13,9 @@ export class ItemService {
   constructor(private restService: CloudAppRestService) { }
 
   getItemByBarcode(barcode: string): Observable<Item> {
+
     const request: Request = {
-      url: `/almaws/v1/items?item_barcode=${barcode}`,
+      url: `/almaws/v1/items?item_barcode=${encodeURI(barcode)}`,
       method: HttpMethod.GET
     };
     return this.restService.call(request);
