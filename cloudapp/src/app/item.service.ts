@@ -35,8 +35,7 @@ export class ItemService {
   updateItem(itemUpdate: ItemUpdate): Observable<Item> {
     itemUpdate.item.item_data.storage_location_id = itemUpdate.rmstBarcodeForItems;
 
-    // Change the status of the item from in-process to available
-    itemUpdate.item.item_data.internal_note_1 = '';
+  
 
     if (itemUpdate.bigMoveMode) {
       // Change the location and library based on the mapping
