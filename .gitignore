@@ -50,3 +50,4 @@ build
 cloudapp/src/assets/manifest*.json
 config.json
 .vscode
+.ropeproject/
