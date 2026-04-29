@@ -4,22 +4,22 @@
       <mat-spinner diameter="50"></mat-spinner>
       <br>
     </div>
-    
+
     <div class="options-container">
       <mat-checkbox [(ngModel)]="locationCheck">Require LSC Item Location</mat-checkbox>
     </div>
-      
+
     <mat-form-field appearance="outline">
       <mat-label>Item Barcode</mat-label>
       <input #itemBarcode (keydown.enter)="onItemEnterPressed(itemBarcode.value, itemBarcode)" matInput
-        placeholder="Item Barcode">
+        >
       <mat-icon matSuffix>document_scanner</mat-icon>
       <mat-hint></mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>RMST Barcode</mat-label>
-      <input #rmstBarcode (keydown.enter)="onRMSTEnterPressed(rmstBarcode.value)" matInput placeholder="RMST Barcode">
+      <input #rmstBarcode (keydown.enter)="onRMSTEnterPressed(rmstBarcode.value)" matInput>
       <mat-icon matSuffix>document_scanner</mat-icon>
       <mat-hint></mat-hint>
     </mat-form-field>

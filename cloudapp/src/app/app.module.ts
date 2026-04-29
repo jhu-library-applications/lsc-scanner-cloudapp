@@ -23,7 +23,7 @@ import { MainComponent } from './main/main.component';
         ReactiveFormsModule,
         MatCheckboxModule,
         CloudAppTranslateModule.forRoot()], providers: [
-        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'outline' } },
+        { provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: { appearance: 'fill' } },
         provideHttpClient(withInterceptorsFromDi()),
     ] })
 export class AppModule { }
