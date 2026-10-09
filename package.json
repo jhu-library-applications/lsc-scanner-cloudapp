@@ -57,5 +57,9 @@
     "fsevents@2.3.3": true,
     "lmdb@3.0.13": true,
     "msgpackr-extract@3.0.3": true
+  },
+  "overrides": {
+    "piscina": "^4.9.4",
+    "tar": "^7.5.22"
   }
 }
