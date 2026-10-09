@@ -49,5 +49,13 @@
     "karma-jasmine-html-reporter": "2.1.0",
     "postcss": "8.4.49",
     "typescript": "5.5.4"
+  },
+  "allowScripts": {
+    "@exlibris/exl-cloudapp-base@2.0.2": true,
+    "esbuild@0.23.0": true,
+    "esbuild@0.21.5": true,
+    "fsevents@2.3.3": true,
+    "lmdb@3.0.13": true,
+    "msgpackr-extract@3.0.3": true
   }
 }
